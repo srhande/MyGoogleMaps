@@ -298,4 +298,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
+    public void clearMarkers(View v) {
+        mMap.clear();
+    }
+
 }

@@ -11,7 +11,7 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Map View"
+        android:text="View"
         android:id="@+id/button_switchView"
         android:onClick="switchView"
         android:nestedScrollingEnabled="true" />
@@ -37,6 +37,14 @@
         android:id="@+id/button_search"
         android:onClick="search"
         android:nestedScrollingEnabled="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clear"
+        android:id="@+id/button_clear"
+        android:nestedScrollingEnabled="true"
+        android:onClick="clearMarkers" />
 
 </LinearLayout>
 
