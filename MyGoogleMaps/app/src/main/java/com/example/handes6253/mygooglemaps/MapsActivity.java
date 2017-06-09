@@ -73,7 +73,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Add a marker in Sydney and move the camera
         LatLng mumbai = new LatLng(19.2326911, 72.8583207);
-        mMap.addMarker(new MarkerOptions().position(mumbai).title("Marker in Mumbai"));
+        mMap.addMarker(new MarkerOptions().position(mumbai).title("Born here"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(mumbai));
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
@@ -293,7 +293,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             android.location.Address address = addressList.get(0);
             LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(latLng).title("Search Results"));
+            mMap.addMarker(new MarkerOptions().position(latLng).title("Search Result"));
             mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
         }
     }
