@@ -45,6 +45,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private Location myLocation;
     private boolean isTracked = false;
     EditText editSearch;
+    private boolean dotColor = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,24 +109,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (isGPSenabled) {
                     Log.d("MyMaps", "getLocation: GPS Enabled - requesting location updates");
                     if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        // TODO: Consider calling
-                        //    ActivityCompat#requestPermissions
-                        // here to request the missing permissions, and then overriding
-                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                        //                                          int[] grantResults)
-                        // to handle the case where the user grants the permission. See the documentation
-                        // for ActivityCompat#requestPermissions for more details.
                         return;
                     }
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerGps);
                     Log.d("MyMaps", "getLocation: GPS update request success");
-                    Toast.makeText(this, "Using GPS", Toast.LENGTH_SHORT);
+                    Toast.makeText(this, "Using GPS", Toast.LENGTH_SHORT).show();
                 }
-                if (isNetworkEnabled) {
+                else if (isNetworkEnabled) {
                     Log.d("MyMaps", "getLocation: Network Enabled - requesting location updates");
                     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerGps);
                     Log.d("MyMaps", "getLocation: Network update request success");
-                    Toast.makeText(this, "Using Network", Toast.LENGTH_SHORT);
+                    Toast.makeText(this, "Using Network", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -158,6 +152,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return;
             }
             locationManager.removeUpdates(locationListenerNetwork);
+            dotColor = true;
         }
 
         @Override
@@ -197,10 +192,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         @Override
-        public void onProviderEnabled(String provider) {}
+        public void onProviderEnabled(String provider) {
+        }
 
         @Override
-        public void onProviderDisabled(String provider) {}
+        public void onProviderDisabled(String provider) {
+        }
     };
 
     android.location.LocationListener locationListenerNetwork = new android.location.LocationListener() {
@@ -212,6 +209,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             Toast.makeText(MapsActivity.this, "Network Location changed", Toast.LENGTH_SHORT).show();
             //relaunch request for network location updates (requestLocationUpdates(NETWORK_PROVIDER)
             dropMarker(LocationManager.NETWORK_PROVIDER);
+            if (ActivityCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(MapsActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, locationListenerNetwork);
+            dotColor = false;
         }
 
         @Override
@@ -222,10 +231,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         @Override
-        public void onProviderEnabled(String provider) {}
+        public void onProviderEnabled(String provider) {
+        }
 
         @Override
-        public void onProviderDisabled(String provider) {}
+        public void onProviderDisabled(String provider) {
+        }
 
     };
 
@@ -235,13 +246,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         if (locationManager != null) {
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                // TODO: Consider calling
-                //    ActivityCompat#requestPermissions
-                // here to request the missing permissions, and then overriding
-                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                //                                          int[] grantResults)
-                // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
                 return;
             }
             myLocation = locationManager.getLastKnownLocation(provider);
@@ -255,25 +259,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             userLocation = new LatLng(myLocation.getLatitude(), myLocation.getLongitude());
 
             //display log d message and/or toast of coordinates
-            Toast.makeText(MapsActivity.this, "" + myLocation.getLatitude() + ", " +myLocation.getLongitude(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(MapsActivity.this, "" + myLocation.getLatitude() + ", " + myLocation.getLongitude(), Toast.LENGTH_SHORT).show();
 
             CameraUpdate update = CameraUpdateFactory.newLatLngZoom(userLocation, MY_LOC_ZOOM_FACTOR);
 
             //add a shape for a marker (don't use standard teardrop marker)
-            Circle myCircle = mMap.addCircle(new CircleOptions().center(userLocation).radius(1).strokeColor(Color.RED).strokeWidth(2).fillColor(Color.RED));
+            Circle myCircle;
 
+            if (dotColor == true) {
+                myCircle = mMap.addCircle(new CircleOptions().center(userLocation).radius(1).strokeColor(Color.RED).strokeWidth(2).fillColor(Color.RED));
+                Log.d("MyMaps", "red marker dropped for GPS");
+            } else if (dotColor == false) {
+                myCircle = mMap.addCircle(new CircleOptions().center(userLocation).radius(1).strokeColor(Color.BLACK).strokeWidth(2).fillColor(Color.BLACK));
+                Log.d("MyMaps", "black marker dropped for Network");
+            }
             mMap.animateCamera(update);
         }
 
     }
 
     public void trackLocation(View view) {
-        isTracked = true;
-        if (isTracked == true) {
-            getLocation();
-            isTracked = false;
-        }
         if (isTracked == false) {
+            getLocation();
+            mMap.setMyLocationEnabled(false);
+            isTracked = true;
+        }
+        else {
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            mMap.setMyLocationEnabled(true);
+            isTracked = false;
             return;
         }
     }
@@ -282,7 +298,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         EditText locationSearch = (EditText) findViewById(R.id.editText_search);
         String location = locationSearch.getText().toString();
         List<android.location.Address> addressList = null;
-
+        if (location.equals("")) {
+            Toast.makeText(MapsActivity.this, "Please enter search location", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (location != null || !location.equals("")) {
             Geocoder geocoder = new Geocoder(this);
             try {
